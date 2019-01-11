@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t tudorrotarus/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run tudorrotarus/react-test npm run test -- --coverage
+
+after_success:
+  - docker build -t tudorrotarus/multi-client ./client
+  - docker build -t tudorrotarus/multi-nginx ./nginx
+  - docker build -t tudorrotarus/multi-server ./server
+  - docker build -t tudorrotarus/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push tudorrotarus/multi-client
+  - docker push tudorrotarus/multi-nginx
+  - docker push tudorrotarus/multi-server
+  - docker push tudorrotarus/multi-worker
